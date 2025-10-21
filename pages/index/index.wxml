@@ -1,0 +1,61 @@
+<view class="container">
+  <!-- 相机区域 - 仅在需要时显示 -->
+  <view wx:if="{{showCamera}}">
+    <!-- 相机组件 -->
+    <camera class="camera" device-position="back" flash="off"></camera>
+    
+    <!-- 拍照和关闭按钮 -->
+    <view class="camera-controls">
+      <button class="camera-button" bindtap="takePhoto">拍照</button>
+      <button class="close-button" bindtap="closeCamera">关闭摄像头</button>
+    </view>
+  </view>
+  
+  <!-- 非相机模式下显示的按钮 -->
+  <button wx:else class="open-camera-button" bindtap="openCamera">打开摄像头</button>
+  
+  <!-- 图片预览区域 -->
+  <view class="image-preview" wx:if="{{imageSrc}}">
+    <image src="{{imageSrc}}" mode="aspectFit" class="preview-image"></image>
+    
+    <!-- 识别结果展示区域 -->
+    <view class="recognition-section">
+      <text class="section-title">图像识别结果</text>
+      
+      <!-- 识别加载中 -->
+      <view class="loading" wx:if="{{isRecognizing}}">
+        <text>正在识别图片内容...</text>
+      </view>
+      
+      <!-- 识别结果 -->
+      <view class="recognition-result" wx:if="{{recognizedObjects && recognizedObjects.length > 0}}">
+        <text class="result-title">识别到的物体：</text>
+        <view class="object-list">
+          <text class="object-item" wx:for="{{recognizedObjects}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+      
+      <!-- 识别错误 -->
+      <view class="recognition-error" wx:if="{{recognitionError}}">
+        <text class="error-text">识别失败：{{recognitionError}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- AI API 测试区域 -->
+  <view class="ai-section">
+    <text class="section-title">AI功能测试</text>
+    <button class="api-button" bindtap="testAIAPI">测试AI API</button>
+    
+    <!-- API 调用结果 -->
+    <view class="api-result" wx:if="{{apiResult}}">
+      <text class="result-title">调用结果:</text>
+      <text class="result-content">{{apiResult}}</text>
+    </view>
+    
+    <!-- 加载提示 -->
+    <view class="loading" wx:if="{{isLoading}}">
+      <text>正在调用API...</text>
+    </view>
+  </view>
+</view>

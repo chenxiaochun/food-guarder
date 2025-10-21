@@ -1,0 +1,189 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Hello文本样式已删除 */
+
+/* 相机样式 */
+.camera {
+  width: 600rpx;
+  height: 800rpx;
+  background-color: #000;
+  border-radius: 16rpx;
+  margin-bottom: 40rpx;
+}
+
+/* 相机控制区域 */
+.camera-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 600rpx;
+  margin-bottom: 40rpx;
+}
+
+/* 拍照按钮样式 */
+.camera-button {
+  background-color: #07c160;
+  color: white;
+  font-size: 36rpx;
+  width: 200rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 40rpx;
+  margin-right: 20rpx;
+}
+
+/* 关闭摄像头按钮样式 */
+.close-button {
+  background-color: #f56c6c;
+  color: white;
+  font-size: 36rpx;
+  width: 200rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 40rpx;
+}
+
+/* 打开摄像头按钮样式 */
+.open-camera-button {
+  background-color: #07c160;
+  color: white;
+  font-size: 36rpx;
+  width: 280rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 40rpx;
+  margin-bottom: 40rpx;
+}
+
+/* 图片预览区域 */
+.image-preview {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  margin-bottom: 40rpx;
+}
+
+/* 预览图片样式 */
+.preview-image {
+  width: 500rpx;
+  height: 500rpx;
+  border-radius: 8rpx;
+}
+
+/* 图像识别区域样式 */
+.recognition-section {
+  margin-top: 30rpx;
+  width: 100%;
+  padding: 20rpx;
+  background-color: #f8f8f8;
+  border-radius: 16rpx;
+}
+
+/* 识别结果样式 */
+.recognition-result {
+  margin-top: 20rpx;
+}
+
+/* 物体列表样式 */
+.object-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10rpx;
+}
+
+/* 物体项样式 */
+.object-item {
+  background-color: #07c160;
+  color: white;
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+  margin: 10rpx;
+  font-size: 28rpx;
+}
+
+/* 识别错误样式 */
+.recognition-error {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background-color: #fff2f0;
+  border: 1rpx solid #ffccc7;
+  border-radius: 10rpx;
+}
+
+/* 错误文本样式 */
+.error-text {
+  color: #f5222d;
+  font-size: 28rpx;
+}
+
+/* AI API 测试区域样式 */
+.ai-section {
+  width: 100%;
+  max-width: 680rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  margin-top: 20rpx;
+}
+
+/* 区域标题样式 */
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+/* API按钮样式 */
+.api-button {
+  background-color: #1aad19;
+  color: white;
+  font-size: 32rpx;
+  width: 180rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  border-radius: 35rpx;
+  margin-bottom: 20rpx;
+}
+
+/* API结果区域样式 */
+.api-result {
+  background-color: #f8f8f8;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+/* 结果标题样式 */
+.result-title {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+  display: block;
+}
+
+/* 结果内容样式 */
+.result-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 44rpx;
+  word-break: break-all;
+}
+
+/* 加载提示样式 */
+.loading {
+  text-align: center;
+  padding: 20rpx;
+  color: #666;
+  font-size: 28rpx;
+}

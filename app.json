@@ -1,0 +1,22 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "Food Guarder",
+    "navigationBarTextStyle": "black"
+  },
+  "permission": {
+    "scope.camera": {
+      "desc": "用于拍照功能"
+    }
+  },
+  "networkTimeout": {
+    "request": 60000,
+    "connectSocket": 10000,
+    "uploadFile": 30000,
+    "downloadFile": 30000
+  }
+}
