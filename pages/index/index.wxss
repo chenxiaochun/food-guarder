@@ -1,10 +1,160 @@
 .container {
+  padding: 30rpx;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20rpx;
-  background-color: #f5f5f5;
-  min-height: 100vh;
+  background-color: #f8f8f8;
+}
+
+/* 历史记录区域样式 */
+.history-section {
+  width: 100%;
+  margin-top: 30rpx;
+  background-color: #fff;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  /* 设置最大高度为设备高度的60% */
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  /* 为底部固定按钮留出空间 */
+  padding-bottom: 160rpx;
+  box-sizing: border-box;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 25rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  /* 固定标题区域 */
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 10;
+}
+
+.history-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.refresh-button {
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  background-color: #07c160;
+  color: #fff;
+}
+
+.history-loading {
+  padding: 40rpx;
+  text-align: center;
+  color: #666;
+  font-size: 28rpx;
+}
+
+.history-empty {
+  padding: 60rpx;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 历史记录列表容器 - 可滚动 */
+.history-list {
+  width: 100%;
+  /* 占据剩余空间并允许滚动 */
+  flex: 1;
+  overflow-y: auto;
+  /* 设置滚动条样式 */
+  -webkit-overflow-scrolling: touch;
+  /* 移除列表项之间的间距 */
+  display: block;
+}
+
+/* 自定义滚动条样式（部分浏览器支持） */
+.history-list::-webkit-scrollbar {
+  width: 6rpx;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3rpx;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.history-item {
+  padding: 20rpx 25rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+  margin-top: 0;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15rpx;
+}
+
+.history-item-date {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.history-item-count {
+  font-size: 28rpx;
+  color: #07c160;
+  font-weight: 500;
+}
+
+.history-item-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.history-item-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 8rpx;
+  background-color: #f8f8f8;
+}
+
+.history-item-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.history-item-food {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* 删除按钮样式 */
+.delete-button {
+  background-color: #F76260;
+  color: white;
+  padding: 6rpx 20rpx;
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  font-weight: 500;
 }
 
 /* Hello文本样式已删除 */
@@ -49,16 +199,23 @@
   border-radius: 40rpx;
 }
 
-/* 打开摄像头按钮样式 */
+/* 打开摄像头按钮样式 - 固定在底部 */
 .open-camera-button {
   background-color: #07c160;
   color: white;
   font-size: 36rpx;
-  width: 280rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  border-radius: 40rpx;
-  margin-bottom: 40rpx;
+  width: 90%;
+  max-width: 600rpx;
+  height: 100rpx;
+  line-height: 100rpx;
+  border-radius: 50rpx;
+  position: fixed;
+  bottom: 40rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  box-shadow: 0 6rpx 20rpx rgba(7, 193, 96, 0.4);
+  margin-bottom: 0;
 }
 
 /* 图片预览区域 */
@@ -68,7 +225,10 @@
   background-color: #fff;
   border-radius: 16rpx;
   box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
-  margin-bottom: 40rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20rpx;
 }
 
 /* 预览图片样式 */
@@ -80,33 +240,66 @@
 
 /* 图像识别区域样式 */
 .recognition-section {
-  margin-top: 30rpx;
+  margin-top: 20rpx;
   width: 100%;
   padding: 20rpx;
-  background-color: #f8f8f8;
+  background-color: #fff;
   border-radius: 16rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 识别结果样式 */
-.recognition-result {
+.result-section {
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
   margin-top: 20rpx;
 }
 
-/* 物体列表样式 */
-.object-list {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 10rpx;
+.items-list {
+  margin-top: 16rpx;
 }
 
-/* 物体项样式 */
-.object-item {
+.item-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-number {
   background-color: #07c160;
   color: white;
-  padding: 10rpx 20rpx;
-  border-radius: 20rpx;
-  margin: 10rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.item-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.shelf-life {
   font-size: 28rpx;
+  color: #666;
+  background-color: #e6f7ff;
+  padding: 6rpx 16rpx;
+  border-radius: 4rpx;
+  flex-shrink: 0;
 }
 
 /* 识别错误样式 */
@@ -124,18 +317,7 @@
   font-size: 28rpx;
 }
 
-/* AI API 测试区域样式 */
-.ai-section {
-  width: 100%;
-  max-width: 680rpx;
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
-  margin-top: 20rpx;
-}
-
-/* 区域标题样式 */
+/* 区域标题样式 - 保留用于识别结果区域 */
 .section-title {
   font-size: 36rpx;
   font-weight: bold;
@@ -144,40 +326,12 @@
   display: block;
 }
 
-/* API按钮样式 */
-.api-button {
-  background-color: #1aad19;
-  color: white;
-  font-size: 32rpx;
-  width: 180rpx;
-  height: 70rpx;
-  line-height: 70rpx;
-  border-radius: 35rpx;
-  margin-bottom: 20rpx;
-}
-
-/* API结果区域样式 */
-.api-result {
-  background-color: #f8f8f8;
-  border-radius: 10rpx;
-  padding: 20rpx;
-  margin-top: 20rpx;
-}
-
-/* 结果标题样式 */
+/* 结果标题样式 - 保留用于识别结果区域 */
 .result-title {
   font-size: 28rpx;
   color: #666;
   margin-bottom: 10rpx;
   display: block;
-}
-
-/* 结果内容样式 */
-.result-content {
-  font-size: 28rpx;
-  color: #333;
-  line-height: 44rpx;
-  word-break: break-all;
 }
 
 /* 加载提示样式 */

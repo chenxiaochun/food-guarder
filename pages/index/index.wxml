@@ -7,55 +7,80 @@
     <!-- 拍照和关闭按钮 -->
     <view class="camera-controls">
       <button class="camera-button" bindtap="takePhoto">拍照</button>
-      <button class="close-button" bindtap="closeCamera">关闭摄像头</button>
+      <button class="close-button" bindtap="closeCamera">取消</button>
     </view>
   </view>
   
-  <!-- 非相机模式下显示的按钮 -->
-  <button wx:else class="open-camera-button" bindtap="openCamera">打开摄像头</button>
+
+  
+  <!-- 历史记录展示区域 -->
+  <view class="history-section" wx:if="{{!showCamera}}">
+    <view class="history-header">
+      <text class="history-title">历史识别记录</text>
+      <button class="refresh-button" size="mini" bindtap="refreshHistoryData">刷新</button>
+    </view>
+    
+    <!-- 加载中状态 -->
+    <view class="history-loading" wx:if="{{isLoadingHistory}}">
+      <text>加载历史数据中...</text>
+    </view>
+    
+    <!-- 历史记录列表 -->
+      <view class="history-list" wx:if="{{!isLoadingHistory && historyRecords.length > 0}}">
+        <view wx:for="{{historyRecords}}" wx:key="id" class="history-item">
+          <view class="history-item-header">
+            <text class="history-item-date">{{item.recognitionDate}}</text>
+            <text class="history-item-count">识别到 {{item.itemCount}} 个物体</text>
+            <view class="delete-button" bindtap="deleteHistoryRecord" data-id="{{item.id}}">删除</view>
+          </view>
+          <view class="history-item-content">
+            <image class="history-item-image" src="{{item.imageSrc}}" mode="aspectFit"></image>
+            <view class="history-item-list">
+              <text wx:for="{{item.items}}" wx:for-item="food" wx:for-index="idx" wx:key="idx" 
+                    class="history-item-food">{{idx + 1}}. {{food.name}} (保质期: {{food.date}})</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    
+    <!-- 无历史记录 -->
+    <view class="history-empty" wx:if="{{!isLoadingHistory && historyRecords.length === 0}}">
+      <text>暂无历史识别记录</text>
+    </view>
+  </view>
   
   <!-- 图片预览区域 -->
   <view class="image-preview" wx:if="{{imageSrc}}">
     <image src="{{imageSrc}}" mode="aspectFit" class="preview-image"></image>
+  </view>
+  
+  <!-- 识别结果展示区域 -->
+  <view class="recognition-section" wx:if="{{imageSrc}}">
+    <text class="section-title">图像识别结果</text>
     
-    <!-- 识别结果展示区域 -->
-    <view class="recognition-section">
-      <text class="section-title">图像识别结果</text>
-      
-      <!-- 识别加载中 -->
-      <view class="loading" wx:if="{{isRecognizing}}">
-        <text>正在识别图片内容...</text>
-      </view>
-      
-      <!-- 识别结果 -->
-      <view class="recognition-result" wx:if="{{recognizedObjects && recognizedObjects.length > 0}}">
-        <text class="result-title">识别到的物体：</text>
-        <view class="object-list">
-          <text class="object-item" wx:for="{{recognizedObjects}}" wx:key="index">{{item}}</text>
+    <!-- 识别加载中 -->
+    <view class="loading" wx:if="{{isRecognizing}}">
+      <text>正在识别图片内容...</text>
+    </view>
+    
+    <!-- 识别结果 -->
+    <view class="result-section" wx:if="{{recognizedItems && recognizedItems.length > 0}}">
+      <text class="result-title">识别到的物体：</text>
+      <view class="items-list">
+        <view wx:for="{{recognizedItems}}" wx:key="index" class="item-row">
+          <text class="item-number">{{index + 1}}</text>
+          <text class="item-name">{{item.name}}</text>
+          <text class="shelf-life">保质期: {{item.date}}</text>
         </view>
       </view>
-      
-      <!-- 识别错误 -->
-      <view class="recognition-error" wx:if="{{recognitionError}}">
-        <text class="error-text">识别失败：{{recognitionError}}</text>
-      </view>
+    </view>
+    
+    <!-- 识别错误 -->
+    <view class="recognition-error" wx:if="{{recognitionError}}">
+      <text class="error-text">识别失败：{{recognitionError}}</text>
     </view>
   </view>
   
-  <!-- AI API 测试区域 -->
-  <view class="ai-section">
-    <text class="section-title">AI功能测试</text>
-    <button class="api-button" bindtap="testAIAPI">测试AI API</button>
-    
-    <!-- API 调用结果 -->
-    <view class="api-result" wx:if="{{apiResult}}">
-      <text class="result-title">调用结果:</text>
-      <text class="result-content">{{apiResult}}</text>
-    </view>
-    
-    <!-- 加载提示 -->
-    <view class="loading" wx:if="{{isLoading}}">
-      <text>正在调用API...</text>
-    </view>
-  </view>
+  <!-- 非相机模式下显示的按钮 - 固定在底部 -->
+  <button wx:else class="open-camera-button" bindtap="openCamera">扫描物体</button>
 </view>

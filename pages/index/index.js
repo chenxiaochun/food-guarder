@@ -1,18 +1,20 @@
-// 引入配置和API客户端
+// 引入配置、API客户端和数据库工具
 const config = require('../../config/index.js');
 const apiConfig = require('../../config/apiConfig.js');
 const apiClient = require('../../utils/apiClient.js');
+const Database = require('../../utils/db.js');
 
 Page({
   data: {
     // 页面数据
     imageSrc: '', // 存储拍照后的图片路径
-    isLoading: false, // API调用加载状态
-    apiResult: '', // API调用结果
     showCamera: false,
     isRecognizing: false,
     recognizedObjects: [],
-    recognitionError: ''
+    recognizedItems: [], // 识别结果列表
+    recognitionError: '',
+    historyRecords: [], // 历史记录数据
+    isLoadingHistory: false // 加载历史数据的状态
   },
   onLoad: function() {
     // 页面加载时执行
@@ -22,6 +24,67 @@ Page({
     console.log('调试模式:', config.debugMode);
     
     // 不再主动请求相机权限，改为按需请求
+    
+    // 加载历史数据
+    this.loadHistoryData();
+  },
+  
+  // 加载历史识别数据
+  loadHistoryData: function() {
+    try {
+      this.setData({ isLoadingHistory: true });
+      
+      // 从数据库获取历史记录
+      const history = Database.getHistory();
+      
+      console.log('加载到的历史记录:', history);
+      
+      this.setData({
+        historyRecords: history,
+        isLoadingHistory: false
+      });
+    } catch (error) {
+      console.error('加载历史数据失败:', error);
+      this.setData({ isLoadingHistory: false });
+    }
+  },
+  
+  // 刷新历史数据（用于识别成功后重新加载）
+  refreshHistoryData: function() {
+    this.loadHistoryData();
+  },
+  
+  // 删除单条历史记录
+  deleteHistoryRecord: function(e) {
+    const recordId = e.currentTarget.dataset.id;
+    
+    // 弹出确认对话框
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这条历史记录吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            // 调用数据库删除方法
+            await Database.deleteRecord(recordId);
+            
+            // 删除成功后刷新历史数据
+            this.refreshHistoryData();
+            
+            wx.showToast({
+              title: '删除成功',
+              icon: 'success'
+            });
+          } catch (error) {
+            console.error('删除记录失败:', error);
+            wx.showToast({
+              title: '删除失败，请重试',
+              icon: 'none'
+            });
+          }
+        }
+      }
+    });
   },
   
   // 打开摄像头
@@ -150,34 +213,103 @@ Page({
           
           console.log('API调用成功，响应结果:', JSON.stringify(result));
           
-          // 解析识别结果 - 增加对不同响应格式的支持
-          let objects = [];
+          // 解析识别结果 - 处理JSON格式的响应数据
+          let recognizedItems = [];
           if (result) {
-            // 处理标准格式
-            if (result.output && result.output.text) {
-              const textResult = result.output.text.trim();
-              console.log('识别到的文本结果:', textResult);
-              // 按逗号分隔物体
-              objects = textResult.split(',').map(item => item.trim()).filter(item => item);
-            }
-            // 处理可能的其他格式
-            else if (result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content) {
-              const textResult = result.choices[0].message.content.trim();
-              console.log('识别到的文本结果(备选格式):', textResult);
-              objects = textResult.split(',').map(item => item.trim()).filter(item => item);
+            try {
+              // 处理标准格式
+              if (result.output && result.output.text) {
+                const textResult = result.output.text.trim();
+                console.log('识别到的文本结果:', textResult);
+                // 尝试解析JSON格式
+                recognizedItems = JSON.parse(textResult);
+                console.log('成功解析JSON格式结果:', recognizedItems);
+              }
+              // 处理可能的其他格式
+              else if (result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content) {
+                const textResult = result.choices[0].message.content.trim();
+                console.log('识别到的文本结果(备选格式):', textResult);
+                // 尝试解析JSON格式
+                recognizedItems = JSON.parse(textResult);
+                console.log('成功解析JSON格式结果:', recognizedItems);
+              }
+              
+              // 验证解析结果是否为数组
+              if (!Array.isArray(recognizedItems)) {
+                console.error('解析结果不是有效的数组格式');
+                recognizedItems = [];
+              }
+            } catch (jsonError) {
+              console.error('JSON解析失败:', jsonError);
+              console.log('尝试使用备用解析方案');
+              // 如果JSON解析失败，保持原有的逗号分隔解析方式作为备用
+              let textResult = '';
+              if (result.output && result.output.text) {
+                textResult = result.output.text.trim();
+              } else if (result.choices && result.choices[0] && result.choices[0].message && result.choices[0].message.content) {
+                textResult = result.choices[0].message.content.trim();
+              }
+              // 简单的逗号分隔解析作为后备方案
+              const objects = textResult.split(',').map(item => item.trim()).filter(item => item);
+              // 转换为所需的数据结构
+              recognizedItems = objects.map(name => ({ name, date: '未知' }));
             }
           }
           
-          console.log('解析后的物体列表:', objects);
+          console.log('解析后的识别结果:', recognizedItems);
           
           // 更新识别结果
           this.setData({
-            recognizedObjects: objects,
+            recognizedItems: recognizedItems,
             isRecognizing: false
           });
           
+          // 保存识别结果到数据库
+          if (recognizedItems.length > 0) {
+            // 检查是否所有物品都有有效的保持期且不超过300天
+            const hasValidItems = recognizedItems.some(item => {
+              if (!item.date || item.date === '未知') {
+                return false;
+              }
+              
+              // 尝试提取天数
+              const daysMatch = item.date.match(/\d+/);
+              if (!daysMatch) {
+                return false;
+              }
+              
+              const days = parseInt(daysMatch[0], 10);
+              return !isNaN(days) && days <= 300;
+            });
+            
+            // 只有当至少有一个物品有有效保持期且不超过300天时才保存
+            if (hasValidItems) {
+              try {
+                // 创建要保存的记录
+                const recordToSave = {
+                  imageSrc: imagePath,
+                  items: recognizedItems,
+                  itemCount: recognizedItems.length,
+                  recognitionDate: new Date().toLocaleString()
+                };
+                
+                // 保存到数据库
+                await Database.saveRecognition(recordToSave);
+                console.log('识别结果已保存到数据库');
+                
+                // 刷新历史数据列表
+                this.refreshHistoryData();
+              } catch (saveError) {
+                console.error('保存识别结果到数据库失败:', saveError);
+                // 保存失败不影响用户体验，只记录日志
+              }
+            } else {
+              console.log('识别结果中没有有效的保持期（保持期未知或超过300天），不保存到历史记录');
+            }
+          }
+          
           // 如果没有识别到物体，给用户提示
-          if (objects.length === 0) {
+          if (recognizedItems.length === 0) {
             this.setData({
               recognitionError: '未识别到任何物体'
             });
@@ -188,7 +320,7 @@ Page({
           } else {
             // 识别成功提示
             wx.showToast({
-              title: '成功识别到 ' + objects.length + ' 个物体',
+              title: '成功识别到 ' + recognizedItems.length + ' 个物体',
               icon: 'success'
             });
           }
@@ -232,7 +364,13 @@ Page({
             recognitionError: errorMsg + ' (已使用模拟数据)',
             isRecognizing: false,
             // 提供模拟识别结果，便于演示和测试
-            recognizedObjects: ['手机', '桌子', '书本', '水杯', '植物']
+            recognizedItems: [
+              { name: '面包', date: '3天' },
+              { name: '牛奶', date: '7天' },
+              { name: '水果', date: '5天' },
+              { name: '鸡蛋', date: '10天' },
+              { name: '蔬菜', date: '4天' }
+            ]
           });
           
           wx.showModal({
@@ -261,55 +399,5 @@ Page({
     });
   },
   
-  // 测试AI API功能
-  async testAIAPI() {
-    // 设置加载状态
-    this.setData({
-      isLoading: true,
-      apiResult: ''
-    });
-    
-    try {
-      console.log('开始测试千问API调用');
-      console.log('API密钥配置检查:', typeof apiConfig.qwen === 'object' ? '配置存在' : '配置不存在');
-      if (apiConfig.qwen) {
-        console.log('API密钥是否已设置:', apiConfig.qwen.apiKey ? '是' : '否');
-        console.log('基础URL:', apiConfig.qwen.baseUrl);
-      }
-      
-      // 直接使用字符串prompt
-      const testPrompt = '你好，请简单介绍一下你自己';
-      
-      console.log('使用直接的prompt字符串');
-      
-      // 直接调用callQwen，传递prompt字符串
-      const result = await apiClient.callQwen(testPrompt);
-      
-      console.log('测试API调用成功，响应:', JSON.stringify(result));
-      
-      // 更新结果
-      this.setData({
-        apiResult: 'API调用成功!\n响应类型: ' + (typeof result) + '\n' + JSON.stringify(result, null, 2),
-        isLoading: false
-      });
-      
-    } catch (error) {
-      console.error('API测试失败:', error);
-      console.log('错误详情:', JSON.stringify(error));
-      
-      let errorMsg = 'API调用失败';
-      if (error.errMsg) {
-        errorMsg = '网络错误: ' + error.errMsg;
-      } else if (error.message) {
-        errorMsg = 'API错误: ' + error.message;
-      }
-      
-      this.setData({
-        apiResult: errorMsg + '\n详细信息: ' + JSON.stringify(error),
-        isLoading: false
-      });
-    }
-    
-    console.log('测试函数执行完毕');
-  }
+
 })
